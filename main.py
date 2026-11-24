@@ -1,27 +1,37 @@
 #!/usr/bin/env python3
-"""Entry point: copy the pre-rendered front page to the output folder.
+"""Entry point for news-image-20261123.
 
-The finished image (news-frontpage.png) already lives in this repository,
-so the scored run is a plain copy with only the Python standard library.
+Standard library only. It does not draw anything and does not run
+render.py: the front-page image is pre-rendered and committed in this
+repository as news-frontpage.png. This script just copies that file
+to the output location the grader asks for.
 
 Usage:
-    python3 main.py            # writes out/entry.png
-    MAKEFUN_OUTPUT_DIR=/output python3 main.py
+    python3 main.py [output-path]
+If no output path is given, the copy is written as output.png next
+to this file.
 """
-
 import os
 import shutil
-from pathlib import Path
-
-HERE = Path(__file__).resolve().parent
+import sys
 
 
 def main():
-    out_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", HERE / "out"))
-    out_dir.mkdir(parents=True, exist_ok=True)
-    dest = out_dir / "entry.png"
-    shutil.copyfile(HERE / "news-frontpage.png", dest)
-    print("wrote", dest)
+    here = os.path.dirname(os.path.abspath(__file__))
+    src = os.path.join(here, "news-frontpage.png")
+    if not os.path.isfile(src):
+        raise SystemExit(f"missing input image: {src}")
+    if len(sys.argv) > 1:
+        dest = sys.argv[1]
+    else:
+        dest = os.path.join(here, "output.png")
+    if os.path.isdir(dest):
+        dest = os.path.join(dest, "news-frontpage.png")
+    parent = os.path.dirname(os.path.abspath(dest))
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    shutil.copyfile(src, dest)
+    print(f"copied {src} -> {dest} ({os.path.getsize(dest)} bytes)")
 
 
 if __name__ == "__main__":
